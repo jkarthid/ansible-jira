@@ -1,6 +1,12 @@
 # ansible-jira
 Liatrio's JIRA Playbook
 
+Handles Java, Postgres, Nginx, JIRA. Only does initial install of JIRA - requires manual configuration via UI post-install.
+
+When running, pass in `postgresql_jira_password`:
+
+    ansible-playbook -u ec2-user --extra-vars "postgresql_jira_password=***********" jira.yml
+
 ## Hackathon Pipeline
  - [hackathon-pipeline-terraform](https://github.com/liatrio/hackathon-pipeline-terraform)
  - [ansible-jenkins](https://github.com/liatrio/ansible-jenkins)

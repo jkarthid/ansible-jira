@@ -1,0 +1,12 @@
+---
+- name: install java
+  include_role:
+    name: geerlingguy.java
+  vars:
+    java_packages: java-1.8.0-openjdk-devel
+
+
+- name: change java alternative
+  alternatives:
+    name: java
+    path: /usr/lib/jvm/jre-1.8.0-openjdk.x86_64/bin/java

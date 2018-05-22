@@ -1,0 +1,56 @@
+- hosts: jira2.liatr.io
+  vars:
+    hostname: 'jira2.liatr.io'
+    jira_data_dir: '/data/jira'
+    postgres_data_dir: '/data/pgsql'
+    postgres_var_lib: 'pgsql96'
+    postgresql_jira_database: 'jira'
+    postgresql_jira_user: 'jira'
+    # please override at command line with --extra-vars
+    postgresql_jira_password: 'CHANGE_ME'
+  roles:
+    - role: liatrio.mount_persist_data
+      become: yes
+    - role: java_internal
+      become: yes
+    - role: postgres_prereqs
+      become: yes
+    - role: geerlingguy.postgresql
+      become: yes
+      ansible_distribution_version: 6.0.0
+      postgresql_version: 9.6
+      postgresql_config_path: "/var/lib/{{ postgres_var_lib }}/data"
+      postgresql_data_dir: "/var/lib/{{ postgres_var_lib }}/data"
+      postgresql_daemon: postgresql96
+      postgresql_packages:
+        - postgresql96
+        - postgresql96-server
+        - postgresql96-contrib
+        - postgresql96-libs
+      postgresql_databases:
+        - name: "{{ postgresql_jira_database }}"
+      postgresql_users:
+        - name: "{{ postgresql_jira_user }}"
+          password: "{{ postgresql_jira_password }}"
+          encrypted: no       # denotes if the password is already encrypted.
+    - role: jira
+      become: yes
+      jira_version: 7.9.2
+    - role: geerlingguy.nginx
+      become: yes
+      ansible_distribution_major_version: 6
+      nginx_vhosts:
+        - listen: "80"
+          server_name: "{{ hostname }}"
+          extra_parameters: |
+            location / {
+              proxy_set_header        Host $host:$server_port;
+              proxy_set_header        X-Real-IP $remote_addr;
+              proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+              proxy_set_header        X-Forwarded-Proto $scheme;
+              proxy_pass              http://127.0.0.1:8080;
+              # Required for new HTTP-based CLI
+              proxy_http_version 1.1;
+              proxy_request_buffering off;
+              proxy_buffering off; # Required for HTTP-based CLI to work over SSL
+            }
