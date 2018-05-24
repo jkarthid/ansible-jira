@@ -1,0 +1,19 @@
+---
+  # required by geerlingguy.postgresql
+- name: Install python psycopg2
+  pip:
+    name: psycopg2-binary
+
+- name: Create postgres data directory
+  file:
+    path: "{{ postgres_data_dir }}"
+    state: directory
+    owner: "root"
+    group: "root"
+    mode: "755"
+
+- name: Link data directory
+  file:
+    dest: "/var/lib/{{ postgres_var_lib }}"
+    src: "{{ postgres_data_dir }}"
+    state: link

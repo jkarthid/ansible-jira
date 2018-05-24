@@ -1,0 +1,24 @@
+---
+- name: Create JIRA data directory
+  file:
+    path: "{{ jira_data_dir }}"
+    state: directory
+    owner: "root"
+    group: "root"
+    mode: 0755
+
+- name: Download JIRA installer
+  get_url:
+    url: https://www.atlassian.com/software/jira/downloads/binary/atlassian-jira-software-{{jira_version}}-x64.bin
+    dest: "{{ jira_data_dir }}/atlassian-jira-software-{{jira_version}}-x64.bin"
+    mode: 0775
+
+- template:
+    src: ../templates/response.varfile
+    dest: "{{ jira_data_dir }}/response.varfile"
+    mode: 0644
+
+- name: Run JIRA installer
+  command: "./atlassian-jira-software-{{jira_version}}-x64.bin -q -varfile response.varfile"
+  args:
+    chdir: "{{ jira_data_dir }}"
